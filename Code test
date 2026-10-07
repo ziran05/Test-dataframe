@@ -1,0 +1,77 @@
+import pandas as pd
+
+# 0) FONCTIONS
+
+def find_highest_volume(df_input):
+    # retourne la date à laquelle le volume est le plus élevé,
+    ainsi que la valeur de ce volume.
+    max_vol_date = df_input["Volume"].idxmax()
+    max_vol_value = df_input.loc[max_vol_date, "Volume"]
+    return max_vol_date, max_vol_value
+
+def compute_average_close(df_input):
+    # retourne la moyenne des prix de clôture sur l'ensemble du DataFrame.
+    return df_input["Close"].mean()
+    
+
+# 1) DÉFINITION DES VARIABLES
+
+filename = "alphavantage_IBM.json"  
+
+data_json = None 
+time_series = None  
+
+df = None  # dataframe principal contenant les données de marché
+
+max_volume_date = None  
+max_volume_value = None  
+mean_close = None  
+
+
+# 2) CHARGEMENT DES DONNÉS JSON
+
+
+data_json = pd.read_json(filename, typ='dict')
+
+# 3) TRANSFORMATION DES DONNÉES
+
+# extraction des données journalières
+time_series = data_json["Time Series (5min)"]
+
+# conversion en dataframe
+df = pd.DataFrame.from_dict(time_series, orient="index")
+
+df.columns=[
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume"]
+
+
+# conversion des valeurs en float ou int
+df["Open"]   = df["Open"].astype(float)
+df["High"]   = df["High"].astype(float)
+df["Low"]    = df["Low"].astype(float)
+df["Close"]  = df["Close"].astype(float)
+df["Volume"] = df["Volume"].astype(int)
+
+# conversion de l index en dates
+df.index = pd.to_datetime(df.index)
+
+# vérification du DataFrame
+print("\nApercu du DataFrame final :")
+print(df.head())
+
+# 4) APPEL DES FONCTIONS ET AFFICHAGES
+
+
+# calcul de la date et du volume maximal
+max_volume_date, max_volume_value = find_highest_volume(df)
+print("\nDate du volume maximum : %s (Volume = %d)" % (max_volume_date.date(), max_volume_value))
+
+# calcul de la moyenne des prix de clôture
+mean_close = compute_average_close(df)
+print("\nMoyenne des prix de clôture : %.2f" % mean_close)
+
+# fin du script
